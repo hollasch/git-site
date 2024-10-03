@@ -1,0 +1,34 @@
+#!/bin/bash
+#===================================================================================================
+#  git-site - Launches web site for project corresponding to current Git repo
+#
+#  This works with both SSH and HTTPS protocols. To use this, put the `git-site` BASH script
+#  somewhere on your path, and run the command `git site` (without the hyphen).
+#
+#  This command presumes that are going to the site indicated by your remote named 'origin'.
+#
+#  Tested on Windows.
+#===================================================================================================
+
+# Get the remote URL for `origin`, and strip off the trailing ".git".
+
+url=`git remote get-url origin | sed "s/\.git$//"`
+
+# Handle either the SSH ('git:*') or HTTPS ('https:*') remote Git protocols.
+
+shopt -s nocasematch
+if [[ ${url:0:4} == git@ ]]; then
+    # For SSH, replace the interior ":" with "/", and "git@" with the HTTPS URL protocol.
+    url=`echo $url | sed "s/:/\//"`
+    url=`echo $url | sed "s/^git@/HTTPS:\/\//"`
+elif [[ ${url:0:4} != HTTP ]]; then
+    echo Unrecognized origin protocol: $url
+    exit 1
+fi
+
+# Echo and launch the resulting URL.
+
+echo $url
+python -mwebbrowser $url
+
+exit 0
